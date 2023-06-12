@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "worldgen",
+	"version": "${version}",
+	"name": "worldgen",
+	"description": "pre generate chunks before they are visted by a player",
+	"authors": [
+		"jSdCool"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/worldgen/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.worldgen.WorldGen"
+		]
+	},
+	"mixins": [
+		"worldgen.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.14.21",
+		"minecraft": ">=1.20",
+		"java": ">=17",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
