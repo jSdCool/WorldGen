@@ -14,6 +14,7 @@ public class GenerateChunks extends Thread {
     int toX;
     int toZ;
     int totalChunks;
+    static boolean generating=false,stopGenerating=false;
 
     GenerateChunks(CommandContext<ServerCommandSource> context, int fromX, int fromZ, int toX, int toZ) {
         this.context = context;
@@ -22,12 +23,17 @@ public class GenerateChunks extends Thread {
         this.toX = toX;
         this.toZ = toZ;
         this.totalChunks = (toX - fromX + 1) * (toZ - fromZ + 1);
-        this.start();
+        if(!generating)
+            this.start();
+        else
+            context.getSource().sendError(MutableText.of(new LiteralTextContent("chunks are already being generated. please try again later")));
+
     }
 
     public void run() {
         int completed = 0;
-
+        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generating "+totalChunks+" chunks...")), false);
+        generating=true;
         for(int i = this.fromX; i <= this.toX; ++i) {
             for(int j = this.fromZ; j <= this.toZ; ++j) {
                 ++completed;
@@ -44,9 +50,16 @@ public class GenerateChunks extends Thread {
                         context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%)")), true);
                     }
                 }
+                if(stopGenerating){
+                    context.getSource().sendError(MutableText.of(new LiteralTextContent("generation was stopped by an external event")));
+                    stopGenerating=false;
+                    generating=false;
+                    return;
+                }
             }
         }
 
-       context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("DONE")), false);
+        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("DONE")), false);
+        generating=false;
     }
 }
