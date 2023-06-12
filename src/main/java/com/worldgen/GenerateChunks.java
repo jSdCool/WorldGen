@@ -15,6 +15,7 @@ public class GenerateChunks extends Thread {
     int toZ;
     int totalChunks;
     public static boolean generating=false,stopGenerating=false;
+    long startTime;
 
     GenerateChunks(CommandContext<ServerCommandSource> context, int fromX, int fromZ, int toX, int toZ) {
         this.context = context;
@@ -23,6 +24,7 @@ public class GenerateChunks extends Thread {
         this.toX = toX;
         this.toZ = toZ;
         this.totalChunks = (toX - fromX + 1) * (toZ - fromZ + 1);
+        startTime=System.nanoTime();
         if(!generating)
             this.start();
         else
@@ -47,7 +49,8 @@ public class GenerateChunks extends Thread {
                         double percentage = (int)(percent * 10000) / 100.0;
                         int finalI = i;
                         int finalJ = j;
-                        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%)")), true);
+                        int finalCompleted = completed;
+                        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%) ETA: "+getETA(finalCompleted))), true);
                     }
                 }
                 if(stopGenerating){
@@ -61,5 +64,18 @@ public class GenerateChunks extends Thread {
 
         context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("DONE")), false);
         generating=false;
+    }
+
+
+    String getETA(int completed){
+        long elapsed = System.nanoTime()-startTime;
+        double percent = (double)completed / (double)this.totalChunks;
+        long ETA = (long)(1/percent*elapsed);
+        int hours = (int)(ETA/ 3600000000000L);
+        int mins =  (int)(ETA/ 60000000000L)-hours*60;
+        int seconds = (int)((ETA/1000000000L)-mins*60-hours*60*60);
+
+
+        return hours+":"+mins+":"+ seconds;
     }
 }

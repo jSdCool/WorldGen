@@ -3,6 +3,7 @@
 	"package": "com.worldgen.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
+		"Mixin_ShutDown"
 	],
 	"injectors": {
 		"defaultRequire": 1
