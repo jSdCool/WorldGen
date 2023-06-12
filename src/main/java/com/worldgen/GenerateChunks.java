@@ -70,10 +70,10 @@ public class GenerateChunks extends Thread {
     String getETA(int completed){
         long elapsed = System.nanoTime()-startTime;
         double percent = (double)completed / (double)this.totalChunks;
-        long ETA = (long)(1/percent*elapsed);
-        int hours = (int)(ETA/ 3600000000000L);
-        int mins =  (int)(ETA/ 60000000000L)-hours*60;
-        int seconds = (int)((ETA/1000000000L)-mins*60-hours*60*60);
+        long ETA = (long)(1/percent*elapsed)-elapsed;
+        int hours =    (int)(ETA/ 3600000000000L);
+        int mins =     (int)(ETA/ 60000000000L)-hours*60;
+        int seconds = (int)((ETA/ 1000000000L)-mins*60-hours*60*60);
 
 
         return hours+":"+mins+":"+ seconds;
