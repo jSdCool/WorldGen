@@ -38,10 +38,10 @@ public class GenerateChunks extends Thread {
             for(int j = this.fromZ; j <= this.toZ; ++j) {
                 ++completed;
                 Chunk newChunk = context.getSource().getWorld().getChunk(i, j, ChunkStatus.FULL, true);
-                long chunktime = -1L;
+                long chunkTime;
                 if (newChunk != null) {
-                    chunktime = newChunk.getInhabitedTime();
-                    if (chunktime == 0L) {
+                    chunkTime = newChunk.getInhabitedTime();
+                    if (chunkTime == 0) {
                         newChunk.increaseInhabitedTime(1L);
                         double percent = (double)completed / (double)this.totalChunks;
                         double percentage = (int)(percent * 10000) / 100.0;
