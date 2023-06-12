@@ -14,7 +14,7 @@ public class GenerateChunks extends Thread {
     int toX;
     int toZ;
     int totalChunks;
-    static boolean generating=false,stopGenerating=false;
+    public static boolean generating=false,stopGenerating=false;
 
     GenerateChunks(CommandContext<ServerCommandSource> context, int fromX, int fromZ, int toX, int toZ) {
         this.context = context;

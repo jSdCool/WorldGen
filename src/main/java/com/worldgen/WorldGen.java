@@ -17,7 +17,7 @@ public class WorldGen implements ModInitializer {
 
 
     public void onInitialize() {
-        LOGGER.info("Hello Fabric world!");
+        LOGGER.info("world gen initialized");
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             dispatcher.register(CommandManager.literal("generate").then(CommandManager.argument("chunk", ColumnPosArgumentType.columnPos()).executes((context) -> {
                 ColumnPos pos = ColumnPosArgumentType.getColumnPos(context, "chunk");
@@ -26,14 +26,14 @@ public class WorldGen implements ModInitializer {
                 if (newChunk != null) {
                     chunktime = newChunk.getInhabitedTime();
                     if (chunktime == 0) {
-                        newChunk.increaseInhabitedTime(1L);
+                        newChunk.increaseInhabitedTime(1);
                         context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + pos.x() + " " + pos.z())), true);
                     } else if (chunktime > 0) {
                         context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("chunk already exsists")), false);
                     }
                 }
 
-                if (chunktime == -1L) {
+                if (chunktime == -1) {
                     context.getSource().sendFeedback(() ->MutableText.of(new LiteralTextContent("no chunk was generated")), false);
                 }
 
