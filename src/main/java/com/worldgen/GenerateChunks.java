@@ -2,10 +2,9 @@ package com.worldgen;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.LiteralTextContent;
-import net.minecraft.text.MutableText;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkStatus;
+import net.minecraft.text.Text;
+
+import java.util.ArrayList;
 
 public class GenerateChunks extends Thread {
     CommandContext<ServerCommandSource> context;
@@ -14,8 +13,11 @@ public class GenerateChunks extends Thread {
     int toX;
     int toZ;
     int totalChunks;
+    int completed = 0;
+    int numThreads=3;
     public static boolean generating=false,stopGenerating=false;
     long startTime;
+    ArrayList<ChunkGenerator> generators = new ArrayList<>();
 
     GenerateChunks(CommandContext<ServerCommandSource> context, int fromX, int fromZ, int toX, int toZ) {
         this.context = context;
@@ -28,41 +30,74 @@ public class GenerateChunks extends Thread {
         if(!generating)
             this.start();
         else
-            context.getSource().sendError(MutableText.of(new LiteralTextContent("chunks are already being generated. please try again later")));
+            context.getSource().sendError(Text.of("chunks are already being generated. please try again later"));
 
     }
 
     public void run() {
-        int completed = 0;
-        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generating "+totalChunks+" chunks...")), false);
+
+        context.getSource().sendFeedback(() -> Text.of("generating "+totalChunks+" chunks..."), false);
         generating=true;
-        for(int i = this.fromX; i <= this.toX; ++i) {
-            for(int j = this.fromZ; j <= this.toZ; ++j) {
-                ++completed;
-                Chunk newChunk = context.getSource().getWorld().getChunk(i, j, ChunkStatus.FULL, true);
-                long chunkTime;
-                if (newChunk != null) {
-                    chunkTime = newChunk.getInhabitedTime();
-                    if (chunkTime == 0) {
-                        newChunk.increaseInhabitedTime(1L);
-                        double percent = (double)completed / (double)this.totalChunks;
-                        double percentage = (int)(percent * 10000) / 100.0;
-                        int finalI = i;
-                        int finalJ = j;
-                        int finalCompleted = completed;
-                        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%) ETA: "+getETA(finalCompleted))), true);
-                    }
+        int chunksPerGenerator = totalChunks/numThreads;
+        for(int i=0;i<numThreads;i++){
+            int min = i*chunksPerGenerator;
+            int max = i*chunksPerGenerator+chunksPerGenerator-1;
+            if((i + 1) == numThreads){//if on the last thread
+                max = totalChunks;
+            }
+            generators.add(new ChunkGenerator(context,fromX,fromZ,toX,toZ,min,max,this));
+        }
+
+        for (ChunkGenerator generator : generators) {
+            generator.start();
+        }
+
+        int finishedThreads =0;
+        do {
+            for (int i = 0; i < generators.size(); i++) {
+                if (!generators.get(i).isAlive() && !generators.get(i).finished) {
+                    stopGenerating = true;
+                    break;
                 }
+                if (generators.get(i).finished) {
+                    finishedThreads++;
+                    generators.remove(i);
+                    break;
+                }
+            }
+            if(stopGenerating) {
+                break;
+            }
+        } while (finishedThreads != numThreads);
+
+
+        //for(int i = this.fromX; i <= this.toX; ++i) {
+        //    for(int j = this.fromZ; j <= this.toZ; ++j) {
+        //        ++completed;
+        //        Chunk newChunk = context.getSource().getWorld().getChunk(i, j, ChunkStatus.FULL, true);
+        //        long chunkTime;
+        //        if (newChunk != null) {
+        //            chunkTime = newChunk.getInhabitedTime();
+        //            if (chunkTime == 0) {
+        //                newChunk.increaseInhabitedTime(1L);
+        //                double percent = (double)completed / (double)this.totalChunks;
+        //                double percentage = (int)(percent * 10000) / 100.0;
+        //                int finalI = i;
+        //                int finalJ = j;
+        //                int finalCompleted = completed;
+        //                context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%) ETA: "+getETA(finalCompleted))), true);
+        //            }
+        //        }
                 if(stopGenerating){
-                    context.getSource().sendError(MutableText.of(new LiteralTextContent("generation was stopped by an external event")));
+                    context.getSource().sendError(Text.of("generation was stopped by an external event"));
                     stopGenerating=false;
                     generating=false;
                     return;
                 }
-            }
-        }
-
-        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("DONE")), false);
+       //     }
+       // }
+//
+        context.getSource().sendFeedback(() -> Text.of("DONE"), false);
         generating=false;
     }
 
@@ -77,5 +112,14 @@ public class GenerateChunks extends Thread {
 
 
         return hours+":"+mins+":"+ seconds;
+    }
+
+    void update(boolean success,int x, int z){
+        completed++;
+        if(success) {
+            double percent = (double) completed / (double) this.totalChunks;
+            double percentage = (int) (percent * 10000) / 100.0;
+            context.getSource().sendFeedback(() -> Text.of("generated chunk " + x + " " + z + " (" + percentage + "%) ETA: " + getETA(completed)), true);
+        }
     }
 }

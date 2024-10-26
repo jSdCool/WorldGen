@@ -4,8 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.command.argument.ColumnPosArgumentType;
 import net.minecraft.server.command.CommandManager;
-import net.minecraft.text.LiteralTextContent;
-import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.ColumnPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkStatus;
@@ -28,14 +27,14 @@ public class WorldGen implements ModInitializer {
                     chunktime = newChunk.getInhabitedTime();
                     if (chunktime == 0) {
                         newChunk.increaseInhabitedTime(1);
-                        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + pos.x() + " " + pos.z())), true);
+                        context.getSource().sendFeedback(() -> Text.of("generated chunk " + pos.x() + " " + pos.z()), true);
                     } else if (chunktime > 0) {
-                        context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("chunk already exsists")), false);
+                        context.getSource().sendFeedback(() -> Text.of("chunk already exsists"), false);
                     }
                 }
 
                 if (chunktime == -1) {
-                    context.getSource().sendFeedback(() ->MutableText.of(new LiteralTextContent("no chunk was generated")), false);
+                    context.getSource().sendFeedback(() ->Text.of("no chunk was generated"), false);
                 }
 
                 return 1;
