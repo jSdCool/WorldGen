@@ -1,13 +1,12 @@
 package com.worldgen;
 
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-
 import java.util.ArrayList;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 
 public class GenerateChunks extends Thread {
-    CommandContext<ServerCommandSource> context;
+    CommandContext<CommandSourceStack> context;
     int fromX;
     int fromZ;
     int toX;
@@ -19,7 +18,7 @@ public class GenerateChunks extends Thread {
     long startTime;
     ArrayList<ChunkGenerator> generators = new ArrayList<>();
 
-    GenerateChunks(CommandContext<ServerCommandSource> context, int fromX, int fromZ, int toX, int toZ) {
+    GenerateChunks(CommandContext<CommandSourceStack> context, int fromX, int fromZ, int toX, int toZ) {
         this.context = context;
         this.fromX = fromX;
         this.fromZ = fromZ;
@@ -30,13 +29,13 @@ public class GenerateChunks extends Thread {
         if(!generating)
             this.start();
         else
-            context.getSource().sendError(Text.of("chunks are already being generated. please try again later"));
+            context.getSource().sendFailure(Component.nullToEmpty("chunks are already being generated. please try again later"));
 
     }
 
     public void run() {
 
-        context.getSource().sendFeedback(() -> Text.of("generating "+totalChunks+" chunks..."), false);
+        context.getSource().sendSuccess(() -> Component.nullToEmpty("generating "+totalChunks+" chunks..."), false);
         generating=true;
         int chunksPerGenerator = totalChunks/numThreads;
         for(int i=0;i<numThreads;i++){
@@ -89,7 +88,7 @@ public class GenerateChunks extends Thread {
         //            }
         //        }
                 if(stopGenerating){
-                    context.getSource().sendError(Text.of("generation was stopped by an external event"));
+                    context.getSource().sendFailure(Component.nullToEmpty("generation was stopped by an external event"));
                     stopGenerating=false;
                     generating=false;
                     return;
@@ -97,7 +96,7 @@ public class GenerateChunks extends Thread {
        //     }
        // }
 //
-        context.getSource().sendFeedback(() -> Text.of("DONE"), false);
+        context.getSource().sendSuccess(() -> Component.nullToEmpty("DONE"), false);
         generating=false;
     }
 
@@ -119,7 +118,7 @@ public class GenerateChunks extends Thread {
         if(success) {
             double percent = (double) completed / (double) this.totalChunks;
             double percentage = (int) (percent * 10000) / 100.0;
-            context.getSource().sendFeedback(() -> Text.of("generated chunk " + x + " " + z + " (" + percentage + "%) ETA: " + getETA(completed)), true);
+            context.getSource().sendSuccess(() -> Component.nullToEmpty("generated chunk " + x + " " + z + " (" + percentage + "%) ETA: " + getETA(completed)), true);
         }
     }
 }
