@@ -68,25 +68,6 @@ public class GenerateChunks extends Thread {
                 break;
             }
         } while (finishedThreads != numThreads);
-
-
-        //for(int i = this.fromX; i <= this.toX; ++i) {
-        //    for(int j = this.fromZ; j <= this.toZ; ++j) {
-        //        ++completed;
-        //        Chunk newChunk = context.getSource().getWorld().getChunk(i, j, ChunkStatus.FULL, true);
-        //        long chunkTime;
-        //        if (newChunk != null) {
-        //            chunkTime = newChunk.getInhabitedTime();
-        //            if (chunkTime == 0) {
-        //                newChunk.increaseInhabitedTime(1L);
-        //                double percent = (double)completed / (double)this.totalChunks;
-        //                double percentage = (int)(percent * 10000) / 100.0;
-        //                int finalI = i;
-        //                int finalJ = j;
-        //                int finalCompleted = completed;
-        //                context.getSource().sendFeedback(() -> MutableText.of(new LiteralTextContent("generated chunk " + finalI + " " + finalJ + " (" + percentage + "%) ETA: "+getETA(finalCompleted))), true);
-        //            }
-        //        }
                 if(stopGenerating){
                     context.getSource().sendFailure(Component.nullToEmpty("generation was stopped by an external event"));
                     stopGenerating=false;

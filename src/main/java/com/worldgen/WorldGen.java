@@ -18,7 +18,7 @@ public class WorldGen implements ModInitializer {
     public void onInitialize() {
         LOGGER.info("world gen initialized");
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-            dispatcher.register(Commands.literal("generate").requires(source -> source.hasPermission(4))
+            dispatcher.register(Commands.literal("generate").requires(Commands.hasPermission(Commands.LEVEL_OWNERS/*4*/))
                     .then(Commands.argument("chunk", ColumnPosArgument.columnPos()).executes((context) -> {
                 ColumnPos pos = ColumnPosArgument.getColumnPos(context, "chunk");
                 ChunkAccess newChunk = context.getSource().getLevel().getChunk(pos.x(), pos.z(), ChunkStatus.FULL, true);
